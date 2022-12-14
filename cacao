@@ -135,26 +135,26 @@ shift $((OPTIND - 1))
 
 # # # # # # # Main # # # # # # #
 
-if ! $has_flags && [ $# -eq 0 ]; then
+if [ "$has_flags" = false ] && [ $# -eq 0 ]; then
     help; exit 1
 fi
 
-if $show_help; then
+if [ "$show_help" = true ]; then
     help; exit 0
 fi
 
-if $regenerate_ca || ! [ -f "$CA_PATH" ]; then
+if [ "$regenerate_ca" = true ] || ! [ -f "$CA_PATH" ]; then
     gen_ca || exit
 fi
 
-if $install_ca_cert; then
+if [ "$install_ca_cert" = true ]; then
     install_ca_cert || exit
 fi
 
-if $export_ca_cert; then
+if [ "$export_ca_cert" = true ]; then
     export_ca_cert "$ca_cert_export_path" || exit
 fi
 
-if ! $has_flags && [ $# -gt 0 ]; then
+if [ "$has_flags" = false ] && [ $# -gt 0 ]; then
     gen_leaf "$@"
 fi
