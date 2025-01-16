@@ -39,16 +39,17 @@ Examples:
 }
 
 subject_alt_name()
-{
-	local subject_alt_name="DNS:$1"
-	shift
+(
+    subject_alt_name=
+    delimiter=
 
-	for domain_name in "$@"; do
-		subject_alt_name="$subject_alt_name,DNS:$domain_name"
-	done
+    for domain_name in "$@"; do
+        subject_alt_name="$subject_alt_name${delimiter}DNS:$domain_name"
+        delimiter=,
+    done
 
-	echo "$subject_alt_name"
-}
+    printf %s "$subject_alt_name"
+)
 
 gen_ca()
 (
