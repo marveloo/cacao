@@ -55,13 +55,14 @@ gen_ca()
     umask 077
 
     # use -config "" to ensure no default configuration file is loaded
-    openssl req -config "" -x509 -noenc \
-        > "$CA_PATH" \
+    cert=$(openssl req -config "" -x509 -noenc \
         -subj "/CN=$CA_NAME" \
         -addext "basicConstraints=critical,CA:true,pathlen:0" \
         -addext "keyUsage=critical,keyCertSign" \
-        -days 5000 \
-        || return 1
+        -days 5000
+    ) || return 1
+
+    printf '%s\n' "$cert" > "$CA_PATH" || return 1
 
     echo "$CA_NAME has been generated." >&2
 )
@@ -77,15 +78,17 @@ gen_leaf()
     # or fewer on iOS and macOS: https://support.apple.com/en-us/HT210176
 
     # use -config "" to ensure no default configuration file is loaded
-    openssl req -config "" -x509 -noenc \
-        -CA "$CA_PATH" > "$leaf_path" \
+    cert=$(openssl req -config "" -x509 -noenc \
+        -CA "$CA_PATH" \
         -subj "/CN=$leaf_name" \
         -addext "basicConstraints=critical,CA:false" \
         -addext "keyUsage=critical,digitalSignature,keyEncipherment" \
         -addext "extendedKeyUsage=serverAuth,clientAuth" \
         -addext "subjectAltName=$(subject_alt_name "$@")" \
-        -days 825 \
-        || return 1
+        -days 825
+    ) || return 1
+
+    printf '%s\n' "$cert" > "$leaf_path" || return 1
 
     echo "Certificate and its corresponding private key have been generated in $leaf_path" >&2
 )
@@ -99,7 +102,8 @@ install_ca_cert()
 (
     echo "Installing the $CA_NAME certificate into the system trust store..." >&2
 
-    print_ca_cert > "$CA_CERT_INSTALL_PATH" || return 1
+    cert=$(print_ca_cert) || return 1
+    printf '%s\n' "$cert" > "$CA_CERT_INSTALL_PATH" || return 1
     
     # use `--fresh` and hide confusing output messages on success 
     # to work around bugs in `update-ca-certificates`
