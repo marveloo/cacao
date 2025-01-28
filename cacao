@@ -157,7 +157,12 @@ if [ "$show_help" = true ]; then
     help; exit 0
 fi
 
-if [ "$regenerate_ca" = true ] || ! [ -f "$CA_PATH" ]; then
+# generate only if CA file is accessible but does not exist
+# or if explicitly requested
+if 
+    [ -x "$(dirname -- "$CA_PATH")" ] && ! [ -f "$CA_PATH" ] || 
+    [ "$regenerate_ca" = true ]
+then
     gen_ca || exit
 fi
 
